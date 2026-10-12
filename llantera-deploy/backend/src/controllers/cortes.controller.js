@@ -74,7 +74,7 @@ export const cerrar = async (req, res) => {
            SELECT SUM(vp.monto)
            FROM ventas_pagos vp
            JOIN ventas v2 ON v2.id = vp.venta_id
-           WHERE v2.negocio_id = v.negocio_id
+           WHERE v2.negocio_id = $1
              AND v2.estado = 'pagada'
              AND v2.created_at >= $2 AND v2.created_at <= NOW()
              AND vp.metodo_pago = 'efectivo'
@@ -192,15 +192,15 @@ export const detalle = async (req, res) => {
          COALESCE(SUM(descuento) FILTER (WHERE estado = 'pagada'), 0)  AS total_descuentos,
          COALESCE(SUM(iva)       FILTER (WHERE estado = 'pagada'), 0)  AS total_iva,
          COALESCE((SELECT SUM(vp.monto) FROM ventas_pagos vp JOIN ventas v2 ON v2.id = vp.venta_id
-                   WHERE v2.negocio_id = ventas.negocio_id AND v2.estado = 'pagada'
+                   WHERE v2.negocio_id = $1 AND v2.estado = 'pagada'
                      AND v2.created_at >= $2 AND v2.created_at <= COALESCE($3::timestamptz, NOW())
                      AND vp.metodo_pago = 'efectivo'), 0)      AS efectivo,
          COALESCE((SELECT SUM(vp.monto) FROM ventas_pagos vp JOIN ventas v2 ON v2.id = vp.venta_id
-                   WHERE v2.negocio_id = ventas.negocio_id AND v2.estado = 'pagada'
+                   WHERE v2.negocio_id = $1 AND v2.estado = 'pagada'
                      AND v2.created_at >= $2 AND v2.created_at <= COALESCE($3::timestamptz, NOW())
                      AND vp.metodo_pago = 'tarjeta'), 0)       AS tarjeta,
          COALESCE((SELECT SUM(vp.monto) FROM ventas_pagos vp JOIN ventas v2 ON v2.id = vp.venta_id
-                   WHERE v2.negocio_id = ventas.negocio_id AND v2.estado = 'pagada'
+                   WHERE v2.negocio_id = $1 AND v2.estado = 'pagada'
                      AND v2.created_at >= $2 AND v2.created_at <= COALESCE($3::timestamptz, NOW())
                      AND vp.metodo_pago = 'transferencia'), 0) AS transferencia
        FROM ventas
